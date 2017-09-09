@@ -1,9 +1,27 @@
-dist: trusty #Force trusty for git-lfs (default from 2017-09)
+env:
+  global:
+    - ANDROID_API=25
+    - ANDROID_BUILD_TOOLS=26.0.1
+  secure: "W66MJpRI7mGtUEe+gEC5U9QeoxdJFkyK4KgGDvjgzyJY2hFISXF+lZyyR1CFB1aQpWo3ovWh3OIEIQrWxDSw9QKKaMmkLxZwYOjeSGTczNAUmb+U2z87CHq9E0H+u1fwJYw8HwS5ZI6y+BkzpfDsmevb5ZykZRY7Ln2jBle6Zif1P+gRkZNdCTkoniQOANRvUSggMZx66Rcz3CfTdjsEl2hahhdMA41lqqeQrpD8yJBUe3PEQ2gvfvQ5rYm9vw01lBGVlFUqhkfyyDM1tG8nYOWVS8w2trHzjQ+7dIT0PcdailL1luKkY9f7+WO8B1GwbbzbLTPAxRIYvJt5PpXRBgffPjshosF6m2vkY03WSsXDQuwjRyYH9k5ukZwQ/PZlmPmDzb/sl6pYYIB94MfSIt2+ISQjBf92WIRgmb+uLM8w/TUCvt9Gqg6QnKrSC37pUZOMjXy6Kd6d0G8ysEnAnO525p4igFUBmPKtYISGxJUmqzci2e0Feuh6X0RAWLP3rdvryC1NO3UUfp6XdoX7RfwS/imqshm1MrTw5C9k8fFLfOANLnZoEFMBkbR8tPm6kyt8pejEFu2jO1kxdYQ2kBpM/UshnUcf68M5SrLiORC41kGQ/JuloJUmCzBGxLlLGHICVc+Rzrm9vPfdfOMy6CNW/xjKS+MUCyN3nNeMXPI="
+  secure: "q4kh/ZcZsrA+mamz1n4A3Lhn0udb2Rj0XF3JIxboBqLukrzTNtGKTN9IAsOWpJgktcpakd9/DQ1IBDbayEFhRQvImKxV/s+mQLBOdLvZu4EQAVolvL9D6FkPU2FsjGpqYZs2c5wCWrSgOCz1sguHyiIkYuR58qzInJzy1RBp8++P0YSoWrR3UCyhAdZEFIttEMWw+fBxlS4uPb0SmEDAmwAVHQUwMPAKXhQSDINdXwXGP+2v8AxsWWDSKHCX3qS6ArTCxblGGPDeMtCv4AKZxD3Z8Faax1XenhXIIbSo8nQeuCkMJDcMYXcTTTrH/zJtg/Jnn/ffyxoZKkBRhD/Xw+an03FAGhktvr2QdCvd0rh3EPMfNZpNPz7H8O8vFUuxIxSpyaUme0qP0cJzAKxlNbFctpifj1nd5YvpRW7YOfDg1oY45xLVp7/OKBrcz1DBzKdEIxAp7sUQ6R+A1EsquHdlgyaqbvXPwP6SIdhjMFD4yQl+v4TBV6NXZt/DCFyuh5TFhaLhR6Pbsc6wIOokzgDJc+nYs7Jc3eX9SIwQuxwqHeTaYafdhd8bqNy7a8VSAcI7yy+oVuXg2pbKwxZG2/D6CSfidjR9NB48pjkrT1AAMtNdwKrzZfNK7h5KArJ8x5lmtIvfEAkcypfjCbwdlyytCdSEaWVQ7HS6OsVywc0="
+
+#dist: trusty #Force trusty for git-lfs (default from 2017-09)
 
 language: android
 
 jdk:
   - oraclejdk8
+
+android:
+  components:
+    - tools #latest for "builtin" sdk tools (24.4.1 in Android-25)
+    #- tools #latest, 26.0.2 as of 2017-09-05
+    - platform-tools #latest, 26.0.0 as of 2017-09-05
+    - build-tools-$ANDROID_BUILD_TOOLS
+    - android-$ANDROID_API
+    - extra-android-m2repository # for design library
+    - extra-google-m2repository
+    - extra-google-google_play_services
 
 cache:
   directories:
@@ -16,23 +34,34 @@ before_cache:
   - rm -f $HOME/.gradle/caches/*/jarSnapshots/cache.properties.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
-android:
-    components:
-        - tools #latest for "builtin" sdk tools (24.4.1 in Android-25)
-        #To update SDK Tools to latest, another update is required
-        #- tools #latest, 25.2.4 as of 2016-12-16
-        - platform-tools #latest, 25.0.3 as of 2016-12-17
-        - build-tools-26.0.1
-        - android-25
-        - extra-android-m2repository
-        - extra-google-m2repository
-        - extra-google-google_play_services
-
 notifications:
   email: false
 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_c0801aa05af4_key -iv $encrypted_c0801aa05af4_iv -in .travis-keystore.jks.enc -out keystore.jks -d
+
 script:
-    - ./gradlew lintFroyoRelease  assembleFroyoRelease
-    - ./gradlew wear:lR wear:aR
-    - ./gradlew lintLatestRelease assembleLatestRelease
-    - ./gradlew test
+  - ./gradlew lintFroyoRelease  assembleFroyoRelease
+  - ./gradlew wear:lR wear:aR
+  - ./gradlew lintLatestRelease assembleLatestRelease
+  - ./gradlew test
+
+before_deploy:
+  - cp $TRAVIS_BUILD_DIR/keystore.jks $HOME
+  - cd app/build/outputs/apk/latest/release/
+  - jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $HOME/keystore.jks -storepass $storepass -keypass $keypass app-latest-release-unsigned.apk keystore
+
+  # Verification
+  - jarsigner -verify app-latest-release-unsigned.apk
+  - "${ANDROID_HOME}/build-tools/$ANDROID_BUILD_TOOLS/zipalign -v 4 app-latest-release-unsigned.apk runnerup-latest.apk"
+
+deploy:
+  provider: releases
+  file: runnerup-latest.apk
+  skip_cleanup: true
+  on:
+    repo: jonasoreland/runnerup
+    tags: true
+    jdk: oraclejdk8
+  api_key:
+    secure: jonas-tbd-github-api-key

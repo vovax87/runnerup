@@ -28,29 +28,33 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentTop="true"
-        android:layout_above="@+id/gpsinfo" >
+        android:layout_above="@+id/gpsinfo"
+        android:visibility="gone">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
 
-		    <TabWidget
-    		    android:id="@android:id/tabs"
-        		android:layout_width="match_parent"
-        		android:layout_height="wrap_content" >
-    		</TabWidget>
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"></TabWidget>
             
             <FrameLayout
                 android:id="@android:id/tabcontent"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_below="@android:id/tabs" >
-                
-                <include layout="@layout/start_basic" />
-                <include layout="@layout/start_interval" />
+
+                <include
+                    layout="@layout/start_interval"
+                    android:visibility="gone" />
                 <include layout="@layout/start_advanced" />
                 <include layout="@layout/start_manual" />
-			</FrameLayout>
+
+                <include layout="@layout/start_basic" />
+            </FrameLayout>
         </RelativeLayout>
     </TabHost>
 
@@ -59,7 +63,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_above="@+id/start_buttons" >
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="260dp">
 
 	<TextView
         android:id="@+id/gps_info_text"
@@ -109,7 +115,8 @@
             android:id="@+id/hr_layout"
             android:layout_width="0dp"
             android:layout_weight="0.15"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/hr_button"
@@ -117,7 +124,8 @@
                 android:layout_height="match_parent"
                 android:background="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/heart" />
+                android:src="@drawable/heart"
+                />
 
             <TextView
                 android:id="@+id/hr_value_text"
@@ -132,7 +140,8 @@
             android:id="@+id/wear_layout"
             android:layout_width="0dp"
             android:layout_weight="0.15"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/wear_button"

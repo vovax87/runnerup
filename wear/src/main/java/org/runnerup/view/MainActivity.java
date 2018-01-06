@@ -120,6 +120,10 @@ public class MainActivity extends Activity implements Constants, ValueModel.Chan
 
         @Override
         public Fragment getFragment(int row, int col) {
+
+            if(1==1)
+            return new StartFragment();
+
             if (trackerState.get() == null)
                 return new ConnectToPhoneFragment();
             else if (mStateService == null)

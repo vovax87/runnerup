@@ -23,6 +23,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -75,7 +76,7 @@ public class StateService extends Service implements NodeApi.NodeListener, Messa
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle connectionHint) {
-
+                        Log.e("GoogleApiClient","onConnected");
                         /* set "our" data */
                         setData();
 
@@ -106,6 +107,7 @@ public class StateService extends Service implements NodeApi.NodeListener, Messa
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(ConnectionResult result) {
+                        Log.e("onConnectionFailed", ""+result);
                     }
                 })
                 .addApi(Wearable.API)

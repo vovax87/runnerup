@@ -156,6 +156,10 @@ public class MainLayout extends TabActivity
                 .setContent(new Intent(this, SettingsActivity.class)));
 
         tabHost.setCurrentTab(0);
+        for (int i = 0; i < tabHost.getTabWidget().getTabCount(); i++)
+        {
+            tabHost.getTabWidget().getChildAt(i).getLayoutParams().height = 0;
+        }
         WidgetUtil.addLegacyOverflowButton(getWindow());
 
         if (upgradeState == UpgradeState.UPGRADE) {

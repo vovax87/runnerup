@@ -32,7 +32,7 @@ import org.runnerup.common.tracker.TrackerState;
 import org.runnerup.common.util.ValueModel;
 
 @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
-public class StartFragment extends Fragment implements ValueModel.ChangeListener<TrackerState> {
+public class StartFragment extends Fragment implements  ValueModel.ChangeListener<TrackerState> {
 
     private TextView mTxt;
     private CircledImageView mButton;

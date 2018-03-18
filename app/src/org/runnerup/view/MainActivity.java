@@ -42,9 +42,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -53,6 +53,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.Toast;
 
@@ -70,12 +71,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @TargetApi(Build.VERSION_CODES.FROYO)
-public class MainLayout extends TabActivity
+public class MainActivity extends Activity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
 
-    private TabHost tabHost;
-    private  static int TABSIZ = 4;
-    private int currentTab = 0;
+    private Button startRunButton,startCoRunButton,findRunnerButton,settingsButton = null;
+
+
 
     private Drawable myGetDrawable(int resId) {
         Drawable d = getResources().getDrawable(resId);
@@ -90,7 +91,17 @@ public class MainLayout extends TabActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.main_old);
+        setContentView(R.layout.main);
+
+        startRunButton = (Button) findViewById(R.id.main_start_run_button);
+        startCoRunButton = (Button) findViewById(R.id.main_start_co_run_button);
+        findRunnerButton = (Button) findViewById(R.id.main_find_runner_button);
+        settingsButton = (Button) findViewById(R.id.main_settings_button);
+
+        startRunButton.setOnClickListener(onClickSwichScreens);
+        startCoRunButton.setOnClickListener(onClickSwichScreens);
+        findRunnerButton.setOnClickListener(onClickSwichScreens);
+        settingsButton.setOnClickListener(onClickSwichScreens);
 
         int versionCode = 0;
         UpgradeState upgradeState = UpgradeState.UNKNOWN;
@@ -143,39 +154,16 @@ public class MainLayout extends TabActivity
         PreferenceManager.setDefaultValues(this, R.xml.audio_cue_settings, true);
 
 
-         tabHost = getTabHost(); // The activity TabHost
 
-        tabHost.addTab(tabHost.newTabSpec("Start")
-                .setIndicator(getString(R.string.Start), myGetDrawable(R.drawable.ic_tab_main))
-                .setContent(new Intent(this, StartActivity.class)));
-
-        tabHost.addTab(tabHost.newTabSpec("Feed")
-                .setIndicator(getString(R.string.feed), myGetDrawable(R.drawable.ic_tab_feed))
-                .setContent(new Intent(this, FeedActivity.class)));
-
-        tabHost.addTab(tabHost.newTabSpec("History")
-                .setIndicator(getString(R.string.History), myGetDrawable(R.drawable.ic_tab_history))
-                .setContent(new Intent(this, HistoryActivity.class)));
-
-        tabHost.addTab(tabHost.newTabSpec("Settings")
-                .setIndicator(getString(R.string.Settings), myGetDrawable(R.drawable.ic_tab_setup))
-                .setContent(new Intent(this, SettingsActivity.class)));
-
-        tabHost.setCurrentTab(currentTab);
-        for (int i = 0; i < tabHost.getTabWidget().getTabCount(); i++)
-        {
-            tabHost.getTabWidget().getChildAt(i).getLayoutParams().height = 0;
-        }
-        WidgetUtil.addLegacyOverflowButton(getWindow());
 
         if (upgradeState == UpgradeState.UPGRADE) {
             whatsNew();
         }
         //GPS is essential, always nag user if not granted
-        requestGpsPermissions(this, tabHost.getCurrentView());
+        requestGpsPermissions(this, this.getCurrentFocus());
         //body is essential, always nag user if not granted
 
-        requestBodyPremission(this,tabHost.getCurrentView());
+        requestBodyPremission(this,this.getCurrentFocus());
 
         //Import workouts/schemes. No permission needed
         handleBundled(getApplicationContext().getAssets(), "bundled", getFilesDir().getPath() + "/..");
@@ -183,7 +171,7 @@ public class MainLayout extends TabActivity
         // if we were called from an intent-filter because user opened "runnerup.db.export", load it
         final Uri data = getIntent().getData();
         if (data != null) {
-            if (SettingsActivity.requestReadStoragePermissions(MainLayout.this)) {
+            if (SettingsActivity.requestReadStoragePermissions(MainActivity.this)) {
                 String filePath = null;
                 if ("content".equals(data.getScheme())) {
                     Cursor cursor = this.getContentResolver().query(data, new String[]{android.provider.MediaStore.Images.ImageColumns.DATA}, null, null, null);
@@ -194,7 +182,7 @@ public class MainLayout extends TabActivity
                     filePath = data.getPath();
                 }
                 Log.i(getClass().getSimpleName(), "Importing database from " + filePath);
-                DBHelper.importDatabase(MainLayout.this, filePath);
+                DBHelper.importDatabase(MainActivity.this, filePath);
             } else {
                 Toast.makeText(this, "Storage permission not granted in Android settings, db is not imported.",
                         Toast.LENGTH_SHORT).show();
@@ -351,7 +339,7 @@ public class MainLayout extends TabActivity
             shouldPerms.toArray(perms);
             Snackbar.make(view, "GPS permission is required",
                     Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.OK, new View.OnClickListener() {
+                    .setAction(R.string.OK, new OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             ActivityCompat.requestPermissions(activity, perms, REQUEST_LOCATION);
@@ -389,7 +377,7 @@ public class MainLayout extends TabActivity
             shouldPerms.toArray(perms);
             Snackbar.make(view, "Body permission is required",
                     Snackbar.LENGTH_INDEFINITE)
-                    .setAction(R.string.OK, new View.OnClickListener() {
+                    .setAction(R.string.OK, new OnClickListener() {
                         @Override
                         public void onClick(View view) {
                             ActivityCompat.requestPermissions(activity, perms, REQUEST_BODY);
@@ -407,34 +395,60 @@ public class MainLayout extends TabActivity
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Intent i = null;
-        switch (item.getItemId()) {
-            case R.id.menu_accounts:
-                i = new Intent(this, AccountListActivity.class);
-                break;
-            case R.id.menu_workouts:
-                i = new Intent(this, ManageWorkoutsActivity.class);
-                break;
-            case R.id.menu_audio_cues:
-                i = new Intent(this, AudioCueSettingsActivity.class);
-                break;
-            case R.id.menu_settings:
-                getTabHost().setCurrentTab(3);
-                return true;
-            case R.id.menu_rate:
-                onRateClick.onClick(null);
-                break;
-            case R.id.menu_whatsnew:
-                whatsNew();
-                break;
-        }
-        if (i != null) {
+    private OnClickListener onClickSwichScreens = new OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Intent i = null;
+            switch (view.getId()){
+                case R.id.main_start_run_button:
+                    i = new Intent(MainActivity.this, Start2Activity.class);
+                    break;
+                case R.id.main_start_co_run_button:
+                    i = new Intent(MainActivity.this, FeedActivity.class);
+
+                    break;
+                case R.id.main_find_runner_button:
+
+                    break;
+                case R.id.main_settings_button:
+
+                    break;
+            }
+
+            if (i != null) {
             startActivity(i);
         }
-        return true;
-    }
+
+        }
+    };
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        Intent i = null;
+//        switch (item.getItemId()) {
+//            case R.id.menu_accounts:
+//                i = new Intent(this, AccountListActivity.class);
+//                break;
+//            case R.id.menu_workouts:
+//                i = new Intent(this, ManageWorkoutsActivity.class);
+//                break;
+//            case R.id.menu_audio_cues:
+//                i = new Intent(this, AudioCueSettingsActivity.class);
+//                break;
+//            case R.id.menu_settings:
+////                getTabHost().setCurrentTab(3);
+//                return true;
+//            case R.id.menu_rate:
+//                onRateClick.onClick(null);
+//                break;
+//            case R.id.menu_whatsnew:
+//                whatsNew();
+//                break;
+//        }
+//        if (i != null) {
+//            startActivity(i);
+//        }
+//        return true;
+//    }
 
     /**
      * Id to identify a permission request.
@@ -454,7 +468,7 @@ public class MainLayout extends TabActivity
             } else {
                 String s = "Location Permission was not granted: ";
                 Log.i("MainLayout", s);
-                Toast.makeText(MainLayout.this, s, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
             }
 
         } else {
@@ -468,9 +482,8 @@ public class MainLayout extends TabActivity
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 //        Log.e("onKeyDown",keyCode+"");
         if (keyCode == KeyEvent.KEYCODE_STEM_1){
-            currentTab++;
-            if (currentTab == TABSIZ) {currentTab =0;}
-            tabHost.setCurrentTab(currentTab);
+
+            //// TODO: 17/03/2018 add function to key down
 
         }
         return super.onKeyDown(keyCode, event);

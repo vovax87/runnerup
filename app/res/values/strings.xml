@@ -17,4 +17,7 @@
   <string name="mm31kz513sg5" translatable="false">mm(31);kz(5,13);sg(5)</string>
   <string name="_sign_plus" translatable="false">+</string>
   <string name="_sign_minus" translatable="false">-</string>
+    <string name="find_runner">Find Runner</string>
+  <string name="start_co_run">Start Co Run</string>
+  <string name="start_run">Start Run</string>
 </resources>

@@ -46,14 +46,14 @@ android {
     productFlavors {
         latest {
             dimension "all"
-            minSdkVersion 15
+            minSdkVersion 20
             targetSdkVersion rootProject.ext.compileSdkVersion
             versionName rootProject.ext.versionName
             versionCode 14000000 + rootProject.ext.versionCode
         }
         froyo {
             dimension "all"
-            minSdkVersion 8
+            minSdkVersion 20
             targetSdkVersion rootProject.ext.targetSdkVersion
             versionName rootProject.ext.versionName
             versionCode 8000000 + rootProject.ext.versionCode
@@ -136,6 +136,8 @@ dependencies {
     compile project(':hrdevice')
     latestWearApp project(':wear')
 
+
+
     //Lint bug: https://code.google.com/p/android/issues/detail?id=231323
     latestCompile "com.android.support:design:${rootProject.ext.supportLibrary}"
 
@@ -149,7 +151,8 @@ dependencies {
         transitive=true
     }
     compile 'com.jjoe64:graphview:4.2.1'
-
+    compile "com.google.android.support:wearable:${rootProject.ext.googleWearVersion}"
+    compile "com.google.android.gms:play-services-wearable:${rootProject.ext.googlePlayServicesVersion}"
 
     testCompile "junit:junit:${rootProject.ext.junitVersion}"
     testCompile "org.mockito:mockito-core:${rootProject.ext.mockitoVersion}"

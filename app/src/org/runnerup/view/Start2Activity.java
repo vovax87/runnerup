@@ -121,39 +121,9 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
     boolean batteryLevelMessageShowed = false;
 
 
-    TitleSpinner simpleAudioSpinner = null;
-    AudioSchemeListAdapter simpleAudioListAdapter = null;
-    TitleSpinner simpleTargetType = null;
-    TitleSpinner simpleTargetPaceValue = null;
-    TitleSpinner simpleTargetHrz = null;
-    HRZonesListAdapter hrZonesAdapter = null;
 
-    TitleSpinner intervalType = null;
-    TitleSpinner intervalTime = null;
-    TitleSpinner intervalDistance = null;
-    TitleSpinner intervalRestType = null;
-    TitleSpinner intervalRestTime = null;
-    TitleSpinner intervalRestDistance = null;
-    TitleSpinner intervalAudioSpinner = null;
-    AudioSchemeListAdapter intervalAudioListAdapter = null;
 
-    TitleSpinner advancedWorkoutSpinner = null;
-    WorkoutListAdapter advancedWorkoutListAdapter = null;
-    TitleSpinner advancedAudioSpinner = null;
-    AudioSchemeListAdapter advancedAudioListAdapter = null;
-    Button advancedDownloadWorkoutButton = null;
-    Workout advancedWorkout = null;
-    ListView advancedStepList = null;
-    final WorkoutStepsAdapter advancedWorkoutStepsAdapter = new WorkoutStepsAdapter();
 
-    boolean manualSetValue = false;
-    TitleSpinner manualSport = null;
-    TitleSpinner manualDate = null;
-    TitleSpinner manualTime = null;
-    TitleSpinner manualDistance = null;
-    TitleSpinner manualDuration = null;
-    TitleSpinner manualPace = null;
-    EditText manualNotes = null;
 
     SQLiteDatabase mDB = null;
 
@@ -192,83 +162,6 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         hrValueText = (TextView) findViewById(R.id.hr_value_text);
 
 
-        simpleAudioListAdapter = new AudioSchemeListAdapter(mDB, inflater, false);
-        simpleAudioListAdapter.reload();
-        simpleAudioSpinner = (TitleSpinner) findViewById(R.id.basic_audio_cue_spinner);
-        simpleAudioSpinner.setAdapter(simpleAudioListAdapter);
-        simpleTargetType = (TitleSpinner) findViewById(R.id.tab_basic_target_type);
-        simpleTargetPaceValue = (TitleSpinner) findViewById(R.id.tab_basic_target_pace_max);
-        hrZonesAdapter = new HRZonesListAdapter(this, inflater);
-        simpleTargetHrz = (TitleSpinner) findViewById(R.id.tab_basic_target_hrz);
-        simpleTargetHrz.setAdapter(hrZonesAdapter);
-        simpleTargetType.setOnCloseDialogListener(simpleTargetTypeClick);
-
-        intervalType = (TitleSpinner) findViewById(R.id.interval_type);
-        intervalTime = (TitleSpinner) findViewById(R.id.interval_time);
-        intervalTime.setOnSetValueListener(onSetTimeValidator);
-        intervalDistance = (TitleSpinner) findViewById(R.id.interval_distance);
-        intervalType.setOnSetValueListener(intervalTypeSetValue);
-
-        intervalRestType = (TitleSpinner) findViewById(R.id.interval_rest_type);
-        intervalRestTime = (TitleSpinner) findViewById(R.id.interval_rest_time);
-        intervalRestTime.setOnSetValueListener(onSetTimeValidator);
-        intervalRestDistance = (TitleSpinner) findViewById(R.id.interval_rest_distance);
-        intervalRestType.setOnSetValueListener(intervalRestTypeSetValue);
-        intervalAudioListAdapter = new AudioSchemeListAdapter(mDB, inflater, false);
-        intervalAudioListAdapter.reload();
-        intervalAudioSpinner = (TitleSpinner) findViewById(R.id.interval_audio_cue_spinner);
-        intervalAudioSpinner.setAdapter(intervalAudioListAdapter);
-
-        advancedAudioListAdapter = new AudioSchemeListAdapter(mDB, inflater, false);
-        advancedAudioListAdapter.reload();
-        advancedAudioSpinner = (TitleSpinner) findViewById(R.id.advanced_audio_cue_spinner);
-        advancedAudioSpinner.setAdapter(advancedAudioListAdapter);
-        advancedWorkoutSpinner = (TitleSpinner) findViewById(R.id.advanced_workout_spinner);
-        advancedWorkoutListAdapter = new WorkoutListAdapter(inflater);
-        advancedWorkoutListAdapter.reload();
-        advancedWorkoutSpinner.setAdapter(advancedWorkoutListAdapter);
-        advancedWorkoutSpinner.setOnSetValueListener(new OnSetValueListener() {
-            @Override
-            public String preSetValue(String newValue)
-                    throws IllegalArgumentException {
-                loadAdvanced(newValue);
-                return newValue;
-            }
-
-            @Override
-            public int preSetValue(int newValue)
-                    throws IllegalArgumentException {
-                loadAdvanced(null);
-                return newValue;
-            }
-        });
-        advancedStepList = (ListView) findViewById(R.id.advanced_step_list);
-        advancedStepList.setDividerHeight(0);
-        advancedStepList.setAdapter(advancedWorkoutStepsAdapter);
-        advancedDownloadWorkoutButton = (Button) findViewById(R.id.advanced_download_button);
-        advancedDownloadWorkoutButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Start2Activity.this, ManageWorkoutsActivity.class);
-                Start2Activity.this.startActivityForResult(intent, 113);
-            }
-        });
-
-        manualSport = (TitleSpinner) findViewById(R.id.manual_sport);
-        manualDate = (TitleSpinner) findViewById(R.id.manual_date);
-        manualDate.setOnSetValueListener(onSetValueManual);
-        manualTime = (TitleSpinner) findViewById(R.id.manual_time);
-        manualTime.setOnSetValueListener(onSetValueManual);
-        manualDistance = (TitleSpinner) findViewById(R.id.manual_distance);
-        manualDistance.setOnSetValueListener(onSetManualDistance);
-        manualDuration = (TitleSpinner) findViewById(R.id.manual_duration);
-        manualDuration.setOnSetValueListener(onSetManualDuration);
-        manualPace = (TitleSpinner) findViewById(R.id.manual_pace);
-        manualPace.setVisibility(View.GONE);
-        manualNotes = (EditText) findViewById(R.id.manual_notes);
-
-
-        updateTargetView();
     }
 
     @Override
@@ -281,17 +174,7 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
     public void onResume() {
         super.onResume();
         sensorRegister();
-        simpleAudioListAdapter.reload();
-        intervalAudioListAdapter.reload();
-        advancedAudioListAdapter.reload();
-        advancedWorkoutListAdapter.reload();
-        hrZonesAdapter.reload();
-        simpleTargetHrz.setAdapter(hrZonesAdapter);
-        if (!hrZonesAdapter.hrZones.isConfigured()) {
-            simpleTargetType.addDisabledValue(DB.DIMENSION.HRZ);
-        } else {
-            simpleTargetType.clearDisabled();
-        }
+
 
 
 
@@ -512,7 +395,6 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
                 startButton.setVisibility(View.VISIBLE);
             else if (tabId.contentEquals(TAB_ADVANCED)) {
                 startButton.setVisibility(View.VISIBLE);
-                loadAdvanced(null);
             } else if (tabId.contentEquals(TAB_MANUAL)) {
                 startButton.setText(getString(R.string.Save_activity));
             }
@@ -528,7 +410,7 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
 
             audioPref = WorkoutBuilder.getAudioCuePreferences(ctx, pref,
                     getString(R.string.pref_basic_audio));
-            Dimension target = Dimension.valueOf(simpleTargetType.getValueInt());
+            Dimension target = Dimension.PACE;//Dimension.valueOf(simpleTargetType.getValueInt());
             w = WorkoutBuilder.createDefaultWorkout(getResources(), pref, target);
             w.setWorkoutType(Constants.WORKOUT_TYPE.BASIC);
 
@@ -718,8 +600,6 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
             } else {
                 onGpsTrackerBound();
             }
-        } else {
-            advancedWorkoutListAdapter.reload();
         }
         updateView();
     }
@@ -729,99 +609,14 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         updateView();
     }
 
-    final OnCloseDialogListener simpleTargetTypeClick = new OnCloseDialogListener() {
 
-        @Override
-        public void onClose(TitleSpinner spinner, boolean ok) {
-            if (ok) {
-                updateTargetView();
-            }
-        }
-    };
 
-    void updateTargetView() {
-        Dimension dim = Dimension.valueOf(simpleTargetType.getValueInt());
-        if (dim == null) {
-            simpleTargetPaceValue.setEnabled(false);
-            simpleTargetHrz.setEnabled(false);
-        } else {
-            switch (dim) {
-                case PACE:
-                    simpleTargetPaceValue.setEnabled(true);
-                    simpleTargetPaceValue.setVisibility(View.VISIBLE);
-                    simpleTargetHrz.setVisibility(View.GONE);
-                    break;
-                case HRZ:
-                    simpleTargetPaceValue.setVisibility(View.GONE);
-                    simpleTargetHrz.setEnabled(true);
-                    simpleTargetHrz.setVisibility(View.VISIBLE);
-            }
-        }
-    }
 
-    final OnSetValueListener intervalTypeSetValue = new OnSetValueListener() {
 
-        @Override
-        public String preSetValue(String newValue)
-                throws IllegalArgumentException {
-            return newValue;
-        }
 
-        @Override
-        public int preSetValue(int newValue) throws IllegalArgumentException {
-            boolean time = (newValue == 0);
-            intervalTime.setVisibility(time ? View.VISIBLE : View.GONE);
-            intervalDistance.setVisibility(time ? View.GONE : View.VISIBLE);
-            return newValue;
-        }
-    };
 
-    final OnSetValueListener intervalRestTypeSetValue = new OnSetValueListener() {
 
-        @Override
-        public String preSetValue(String newValue)
-                throws IllegalArgumentException {
-            return newValue;
-        }
 
-        @Override
-        public int preSetValue(int newValue) throws IllegalArgumentException {
-            boolean time = (newValue == 0);
-            intervalRestTime.setVisibility(time ? View.VISIBLE : View.GONE);
-            intervalRestDistance.setVisibility(time ? View.GONE : View.VISIBLE);
-            return newValue;
-        }
-    };
-
-    void loadAdvanced(String name) {
-        Context ctx = getApplicationContext();
-        if (name == null) {
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(ctx);
-            name = pref.getString(getResources().getString(R.string.pref_advanced_workout), "");
-        }
-        advancedWorkout = null;
-        if ("".contentEquals(name))
-            return;
-        try {
-            advancedWorkout = WorkoutSerializer.readFile(ctx, name + ".json");
-            advancedWorkoutStepsAdapter.steps = advancedWorkout.getStepList();
-            advancedWorkoutStepsAdapter.notifyDataSetChanged();
-            advancedDownloadWorkoutButton.setVisibility(View.GONE);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            AlertDialog.Builder builder = new AlertDialog.Builder(Start2Activity.this);
-            builder.setTitle(getString(R.string.Failed_to_load_workout));
-            builder.setMessage("" + ex.toString());
-            builder.setPositiveButton(getString(R.string.OK),
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-            builder.show();
-            return;
-        }
-    }
 
     @Override
     public int getSatellitesAvailable() {
@@ -871,25 +666,8 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
     final Runnable onWorkoutChanged = new Runnable() {
         @Override
         public void run() {
-            String name = advancedWorkoutSpinner.getValue().toString();
-            if (advancedWorkout != null) {
-                Context ctx = getApplicationContext();
-                try {
-                    WorkoutSerializer.writeFile(ctx, name, advancedWorkout);
-                } catch (Exception ex) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(Start2Activity.this);
-                    builder.setTitle(getString(R.string.Failed_to_load_workout));
-                    builder.setMessage("" + ex.toString());
-                    builder.setPositiveButton(getString(R.string.OK),
-                            new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            });
-                    builder.show();
-                    return;
-                }
-            }
+            String name = getString(R.string.app_name);// advancedWorkoutSpinner.getValue().toString();
+
         }
     };
 
@@ -917,14 +695,12 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         @Override
         public String preSetValue(String newValue)
                 throws IllegalArgumentException {
-            manualSetValue = true;
             startButton.setEnabled(true);
             return newValue;
         }
 
         @Override
         public int preSetValue(int newValue) throws IllegalArgumentException {
-            manualSetValue = true;
             startButton.setEnabled(true);
             return newValue;
         }
@@ -935,12 +711,10 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         double dist = SafeParse.parseDouble(distance, 0); // convert to meters
         long seconds = SafeParse.parseSeconds(duration, 0);
         if (dist == 0 || seconds == 0) {
-            manualPace.setVisibility(View.GONE);
             return;
         }
         double pace = seconds / dist;
-        manualPace.setValue(formatter.formatPace(Formatter.Format.TXT_SHORT, pace));
-        manualPace.setVisibility(View.VISIBLE);
+
         return;
     }
 
@@ -949,7 +723,6 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         @Override
         public String preSetValue(String newValue)
                 throws IllegalArgumentException {
-            setManualPace(newValue, manualDuration.getValue().toString());
             startButton.setEnabled(true);
             return newValue;
         }
@@ -967,7 +740,6 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         @Override
         public String preSetValue(String newValue)
                 throws IllegalArgumentException {
-            setManualPace(manualDistance.getValue().toString(), newValue);
             startButton.setEnabled(true);
             return newValue;
         }
@@ -979,68 +751,7 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
         }
     };
 
-    final OnClickListener manualSaveButtonClick = new OnClickListener() {
 
-        @Override
-        public void onClick(View v) {
-            ContentValues save = new ContentValues();
-            int sport = manualSport.getValueInt();
-            CharSequence date = manualDate.getValue();
-            CharSequence time = manualTime.getValue();
-            CharSequence distance = manualDistance.getValue();
-            CharSequence duration = manualDuration.getValue();
-            String notes = manualNotes.getText().toString().trim();
-            long start_time = 0;
-
-            if (notes.length() > 0) {
-                save.put(DB.ACTIVITY.COMMENT, notes);
-            }
-            double dist = 0;
-            if (distance.length() > 0) {
-                dist = Double.parseDouble(distance.toString()); // convert to
-                                                                // meters
-                save.put(DB.ACTIVITY.DISTANCE, dist);
-            }
-            long secs = 0;
-            if (duration.length() > 0) {
-                secs = SafeParse.parseSeconds(duration.toString(), 0);
-                save.put(DB.ACTIVITY.TIME, secs);
-            }
-            if (date.length() > 0) {
-                DateFormat df = android.text.format.DateFormat.getDateFormat(Start2Activity.this);
-                try {
-                    Date d = df.parse(date.toString());
-                    start_time += d.getTime() / 1000;
-                } catch (ParseException e) {
-                }
-            }
-            if (time.length() > 0) {
-                DateFormat df = android.text.format.DateFormat.getTimeFormat(Start2Activity.this);
-                try {
-                    Date d = df.parse(time.toString());
-                    start_time += d.getTime() / 1000;
-                } catch (ParseException e) {
-                }
-            }
-            save.put(DB.ACTIVITY.START_TIME, start_time);
-
-            save.put(DB.ACTIVITY.SPORT, sport);
-            long id = mDB.insert(DB.ACTIVITY.TABLE, null, save);
-
-            ContentValues lap = new ContentValues();
-            lap.put(DB.LAP.ACTIVITY, id);
-            lap.put(DB.LAP.LAP, 0);
-            lap.put(DB.LAP.INTENSITY, DB.INTENSITY.ACTIVE);
-            lap.put(DB.LAP.TIME, secs);
-            lap.put(DB.LAP.DISTANCE, dist);
-            mDB.insert(DB.LAP.TABLE, null, lap);
-
-            Intent intent = new Intent(Start2Activity.this, DetailActivity.class);
-            intent.putExtra("mode", "save");
-            intent.putExtra("ID", id);
-            Start2Activity.this.startActivityForResult(intent, 0);
-        }
-    };
 
     private void sensorInit() {
          mSensorManager = ((SensorManager)getSystemService(SENSOR_SERVICE));

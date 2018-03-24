@@ -18,28 +18,33 @@ package org.runnerup.tracker.component;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Handler;
-import android.preference.PreferenceManager;
-import android.widget.Toast;
+import android.util.Log;
 
-import org.runnerup.R;
-import org.runnerup.hr.HRDeviceRef;
-import org.runnerup.hr.HRManager;
 import org.runnerup.hr.HRProvider;
+
+import static android.content.Context.SENSOR_SERVICE;
 
 /**
  * Created by jonas on 12/11/14.
  */
 @TargetApi(Build.VERSION_CODES.FROYO)
-public class TrackerHRM extends DefaultTrackerComponent {
+public class TrackerHRM extends DefaultTrackerComponent implements SensorEventListener {
 
     private final Handler handler = new Handler();
     private HRProvider hrProvider;
 
     public static final String NAME = "HRM";
+    private boolean hrIsEnable = false;
+    private int hrValue = 0;
+    private SensorManager mSensorManager;
+    private Sensor mHeartRateSensor;
 
     @Override
     public String getName() {
@@ -48,91 +53,52 @@ public class TrackerHRM extends DefaultTrackerComponent {
 
     @Override
     public ResultCode onConnecting(final Callback callback, final Context context) {
-        Resources res = context.getResources();
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        final String btAddress = prefs.getString(res.getString(R.string.pref_bt_address), null);
-        final String btProviderName = prefs.getString(res.getString(R.string.pref_bt_provider),
-                null);
-        final String btDeviceName = prefs.getString(res.getString(R.string.pref_bt_name), null);
+        final PackageManager PM= context.getPackageManager();
+         hrIsEnable = PM.hasSystemFeature(PackageManager.FEATURE_SENSOR_HEART_RATE);
+        Log.e("SENSOR_HEART_RATE",hrIsEnable+"");
+        if (hrIsEnable){
 
-        if (btAddress == null || btProviderName == null) {
-            /* no HRM is configured, return directly */
-            return ResultCode.RESULT_NOT_SUPPORTED;
+            mSensorManager = ((SensorManager)context.getSystemService(SENSOR_SERVICE));
+            mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
+            mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+            return ResultCode.RESULT_OK;
+
         }
+        return ResultCode.RESULT_NOT_SUPPORTED;
 
-        hrProvider = HRManager.getHRProvider(context, btProviderName);
-        if (hrProvider != null) {
-            hrProvider.open(handler, new HRProvider.HRClient() {
-                @Override
-                public void onOpenResult(boolean ok) {
-                    if (!hrProvider.isEnabled()) {
-                        /* no functional HRM */
-                        callback.run(TrackerHRM.this, ResultCode.RESULT_NOT_ENABLED);
-                        return;
-                    }
-
-                    if (!ok) {
-                        /* no functional HRM */
-                        callback.run(TrackerHRM.this, ResultCode.RESULT_ERROR);
-                        return;
-                    }
-
-                    /* return RESULT_OK and connect in background */
-                    // TODO: make it possible to make HRM mandatory i.e don't connect in background
-                    callback.run(TrackerHRM.this, ResultCode.RESULT_OK);
-
-                    hrProvider.connect(HRDeviceRef.create(btProviderName, btDeviceName, btAddress));
-                }
-
-                @Override
-                public void onScanResult(HRDeviceRef device) {
-                }
-
-                @Override
-                public void onConnectResult(boolean connectOK) {
-                    if (connectOK) {
-                        Toast.makeText(context, "Connected to HRM " + btDeviceName,
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(context, "Failed to connect to HRM " + btDeviceName,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onDisconnectResult(boolean disconnectOK) {
-                }
-
-                @Override
-                public void onCloseResult(boolean closeOK) {
-                }
-
-                @Override
-                public void log(HRProvider src, String msg) {
-                }
-            });
-        }
-        return ResultCode.RESULT_PENDING;
     }
 
     @Override
     public boolean isConnected() {
-        if (hrProvider == null)
-            return false;
-        return hrProvider.isConnected();
+
+        return hrIsEnable;
     }
 
     @Override
     public ResultCode onEnd(Callback callback, Context context) {
-        if (hrProvider != null) {
-            hrProvider.disconnect();
-            hrProvider.close();
-            hrProvider = null;
+
+        if (mSensorManager != null){
+            mSensorManager.unregisterListener(this);
         }
         return ResultCode.RESULT_OK;
     }
 
-    public HRProvider getHrProvider() {
-        return hrProvider;
+    public int getHrValue() {
+        return hrValue;
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_HEART_RATE) {
+            hrValue = (int)sensorEvent.values[0];
+//            Log.e("TYPE_HEART_RATE", sensorEvent.values[0]+"");
+
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
     }
 }

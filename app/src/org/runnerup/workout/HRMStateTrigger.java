@@ -1,9 +1,5 @@
 package org.runnerup.workout;
 
-import android.util.Log;
-
-import org.runnerup.hr.HRProvider;
-
 public class HRMStateTrigger extends Trigger {
     private boolean isConnected;
 
@@ -23,10 +19,8 @@ public class HRMStateTrigger extends Trigger {
     }
 
     private boolean getState(Workout s) {
-        HRProvider hrProvider = s.tracker.getHRProvider();
-        if (hrProvider != null)
-            return (hrProvider.isConnected());
-        return (false);
+
+        return s.tracker.getIsHRconnected();
     }
 
     @Override

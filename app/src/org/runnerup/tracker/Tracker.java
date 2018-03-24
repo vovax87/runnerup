@@ -88,7 +88,7 @@ public class Tracker extends android.app.Service implements
     //Some trackers may select separate sensors depending on sport, handled in onBind()
     TrackerGPS trackerGPS = (TrackerGPS) components.addComponent(new TrackerGPS(this));
     TrackerHRM trackerHRM = (TrackerHRM) components.addComponent(new TrackerHRM());
-    TrackerTTS trackerTTS = (TrackerTTS) components.addComponent(new TrackerTTS());
+//    TrackerTTS trackerTTS = (TrackerTTS) components.addComponent(new TrackerTTS());
     private TrackerCadence trackerCadence = (TrackerCadence) components.addComponent(new TrackerCadence());
     private TrackerTemperature trackerTemperature = (TrackerTemperature) components.addComponent(new TrackerTemperature());
     private TrackerPressure trackerPressure = (TrackerPressure) components.addComponent(new TrackerPressure());
@@ -832,19 +832,13 @@ public class Tracker extends android.app.Service implements
         return component.isConnected();
     }
 
-    public HRProvider getHRProvider() {
-        return (trackerHRM.getHrProvider());
+    public boolean getIsHRconnected() {
+        return (trackerHRM.isConnected());
     }
 
     public Integer getCurrentHRValue(long now, long maxAge) {
-        HRProvider hrProvider = trackerHRM.getHrProvider();
-        if (hrProvider == null)
-            return null;
+        return trackerHRM.getHrValue();
 
-        if (now > hrProvider.getHRValueTimestamp() + maxAge)
-            return null;
-
-        return hrProvider.getHRValue();
     }
 
     public Integer getCurrentHRValue() {
@@ -887,10 +881,11 @@ public class Tracker extends android.app.Service implements
     }
 
     public Integer getCurrentBatteryLevel() {
-        HRProvider hrProvider = trackerHRM.getHrProvider();
-        if (hrProvider == null)
-            return null;
-        return hrProvider.getBatteryLevel();
+//        HRProvider hrProvider = trackerHRM.getHrValue();
+//        if (hrProvider == null)
+//            return null;
+//        return hrProvider.getBatteryLevel();
+        return null;
     }
 
     public Workout getWorkout() {

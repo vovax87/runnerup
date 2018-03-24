@@ -441,7 +441,7 @@ public class Start2Activity extends Activity implements TickListener, GpsInforma
 
                 skipStopGps = true;
                 Intent intent = new Intent(Start2Activity.this,
-                        RunActivity.class);
+                        Run2Activity.class);
                 Start2Activity.this.startActivityForResult(intent, 112);
                 notificationStateManager.cancelNotification(); // will be added by RunActivity
                 return;
